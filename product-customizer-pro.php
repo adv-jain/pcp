@@ -118,6 +118,8 @@ if ($url['path'] === "/wp-admin/post.php" || $url['path'] === "/wp-admin/post-ne
 
   wp_enqueue_script('pcp-js', $path_js, $dep_js, $ver_js, true);
   wp_enqueue_script('pcp-fabric', "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js");
+  wp_add_inline_script('pcp-js', 'var pcpAjaxUrl = "' . admin_url('admin-ajax.php') . '"', 'before');
+
 } else {
   // echo "<h1>Not</h1>";
 }

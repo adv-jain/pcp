@@ -2,6 +2,12 @@ let elem = document.createElement('div');
 elem.setAttribute('id', 'pcp-wrapper')
 document.querySelector('#post-body-content').append(elem)
 
+let pcpHeading = document.createElement('h2')
+pcpHeading.innerHTML = "Product Customizer PRO"
+pcpHeading.setAttribute('class', 'postbox-header')
+pcpHeading.setAttribute('id', 'pcpHeading')
+document.querySelector('#pcp-wrapper').append(pcpHeading)
+
 let input = document.createElement('input')
 input.setAttribute('type', 'text')
 input.setAttribute('placeholder', 'Enter number of Layers')
@@ -9,14 +15,50 @@ input.setAttribute('id', 'text-input')
 document.querySelector('#pcp-wrapper').append(input)
 
 let btn = document.createElement('a')
-btn.innerHTML = "Get Fields"
+btn.innerHTML = "Generate Fields"
 btn.setAttribute('id', 'pcp-getFields')
 document.querySelector('#pcp-wrapper').append(btn)
+
+let btnSubmit = document.createElement('a')
+btnSubmit.innerHTML = "Submit Coordinates"
+btnSubmit.setAttribute('id', 'pcp-submit')
+document.querySelector('#pcp-wrapper').append(btnSubmit)
 
 let chooseImg = document.createElement('input')
 chooseImg.setAttribute('type', 'file')
 chooseImg.setAttribute('id', 'chooseImg')
 document.querySelector('#pcp-wrapper').append(chooseImg);
+
+
+document.querySelector('#pcp-submit').addEventListener('click', function () {
+
+  if (confirm('Confirm coordinates submission?')) {
+    let pcpArr = [];
+
+    let pcpFieldsValue = document.querySelectorAll('.pcp-input-field')
+
+    for (let i = 0; i >= pcpFieldsValue; i++) {
+      pcpArr.push(pcpFieldsValue[i].value)
+    }
+
+    console.log('here is the data: ', pcpArr)
+
+    let xhr = XMLHttpRequest()
+    xhr.open("POST", pcpAjaxUrl)
+    xhr.send(JSON.stringify({ pcpArr }))
+
+    xhr.onload = function (e) {
+      console.log(e.response)
+    }
+
+    xhr.onerror = function (e) {
+      alert(e.response)
+    }
+  }
+
+})
+
+console.log(pcpAjaxUrl)
 
 let pcpWrapperImage = document.createElement('div')
 pcpWrapperImage.setAttribute('id', 'pcp-wrapper-image')
@@ -118,7 +160,7 @@ fileInput.addEventListener('change', function () {
             //   }
             // }
             console.log(o)
-            pcpFieldsCount[pcpKeepingCountTrack].value = o.selected[0].left + " : " + o.selected[0].top
+            pcpFieldsCount[pcpKeepingCountTrack].value = o.selected[0].left + " : " + o.selected[0].top + " : " + o.selected[0].height + " : " + o.selected[0].width
             pcpKeepingCountTrack++
           })
         }
@@ -137,7 +179,7 @@ fileInput.addEventListener('change', function () {
           var activeObj = inst.canvas.getActiveObject();
 
           activeObj.stroke = 'red',
-            activeObj.strokeWidth = 2;
+            activeObj.strokeWidth = 1;
           activeObj.fill = 'transparent';
 
           if (origX > pointer.x) {
