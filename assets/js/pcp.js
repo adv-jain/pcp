@@ -29,31 +29,54 @@ chooseImg.setAttribute('type', 'file')
 chooseImg.setAttribute('id', 'chooseImg')
 document.querySelector('#pcp-wrapper').append(chooseImg);
 
-
 document.querySelector('#pcp-submit').addEventListener('click', function () {
 
   if (confirm('Confirm coordinates submission?')) {
+
     let pcpArr = [];
+
+    let pcpForm = new FormData()
+
+    pcpForm.append('action', 'pcp_products_add')
 
     let pcpFieldsValue = document.querySelectorAll('.pcp-input-field')
 
-    for (let i = 0; i >= pcpFieldsValue; i++) {
-      pcpArr.push(pcpFieldsValue[i].value)
-    }
+    pcpFieldsValue.forEach((elem, index) => {
+      pcpArr.push(elem.value)
+    })
 
-    console.log('here is the data: ', pcpArr)
+    pcpForm.append('ppc_product_id', pcpProductId)
+    pcpForm.append('fields_coords', pcpArr)
 
-    let xhr = XMLHttpRequest()
-    xhr.open("POST", pcpAjaxUrl)
-    xhr.send(JSON.stringify({ pcpArr }))
+    // console.log('here is the data: ', pcpForm)
 
-    xhr.onload = function (e) {
-      console.log(e.response)
-    }
+    // let arrToSend = []
+    // for (const pair of pcpForm.values()) {
+    //   arrToSend.push(pair[0]);
+    // }
 
-    xhr.onerror = function (e) {
-      alert(e.response)
-    }
+    console.log(pcpArr)
+
+    console.log('heres the form data below')
+    console.log(pcpForm)
+
+    jQuery(document).ready(function ($) {
+      $.ajax({
+        url: pcpAjaxUrl,
+        type: "POST",
+        data: pcpForm,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          alert('Done')
+          document.querySelector('#pcp-submit').innerHTML = "Submited Successfully"
+        },
+        error: function () {
+          console.log('error made')
+        }
+      })
+    })
+
   }
 
 })
@@ -65,32 +88,25 @@ pcpWrapperImage.setAttribute('id', 'pcp-wrapper-image')
 document.querySelector('#pcp-wrapper').append(pcpWrapperImage)
 
 
-document.querySelector('#pcp-getFields').addEventListener('click', function () {
-  let val = document.querySelector('#text-input').value
-  console.log(val)
-  let elem;
-  let label;
-  for (let i = 1; i <= val; i++) {
+function pcpGetCoordinates(e, para) {
+  e.preventDefault();
 
-    elem = document.createElement('input')
-    elem.setAttribute('class', 'pcp-input-field')
-    if (i == 1) {
-      elem.setAttribute('id', 'pcp-input-field-text')
-      elem.setAttribute('placeholder', 'text #' + i)
-    } else {
-      elem.setAttribute('placeholder', 'Image #' + i)
-      // elem.setAttribute('value', 'Image #' + i)
-    }
-    document.querySelector('#pcp-wrapper').append(elem)
 
+  let rectObj = para.getObjects()[0];
+  const tl = rectObj.aCoords.tl;
+  const tr = rectObj.aCoords.tr;
+  const bl = rectObj.aCoords.bl;
+
+  let rectObjData = {
+    left: rectObj.aCoords.tl.x,
+    top: rectObj.aCoords.tl.y,
+    width: (new fabric.Point(tl.x, tl.y).distanceFrom(tr)),
+    height: (new fabric.Point(tl.x, tl.y).distanceFrom(bl)),
+    angle: fabric.util.radiansToDegrees(Math.atan2(tr.y - tl.y, tr.x - tl.x)),
   }
-})
 
-
-
-
-
-
+  document.querySelector('#btn-' + e.target.id).value = JSON.stringify(rectObjData)
+}
 
 
 let fileInput = document.querySelector('#chooseImg')
@@ -126,129 +142,178 @@ fileInput.addEventListener('change', function () {
 
       //ext - code
 
-      var Rectangle = (function () {
-        function Rectangle(canvas) {
-          var inst = this;
-          this.canvas = canvas;
-          this.className = 'Rectangle';
-          this.isDrawing = false;
-          this.bindEvents();
-        }
+      // var Rectangle = (function () {
+      //   function Rectangle(canvas) {
+      //     var inst = this;
+      //     this.canvas = canvas;
+      //     this.className = 'Rectangle';
+      //     this.isDrawing = false;
+      //     this.bindEvents();
+      //   }
 
-        Rectangle.prototype.bindEvents = function () {
-          var inst = this;
-          inst.canvas.on('mouse:down', function (o) {
-            inst.onMouseDown(o);
-          });
-          inst.canvas.on('mouse:move', function (o) {
-            inst.onMouseMove(o);
-          });
-          inst.canvas.on('mouse:up', function (o) {
-            inst.onMouseUp(o);
-          });
-          inst.canvas.on('object:moving', function (o) {
-            inst.disable();
-          })
-          inst.canvas.on('selection:created', function (o) {
-            // for (let i = 0; i <= pcpFieldsCount.length; i++) {
-            //   if (pcpKeepingCountTrack == 0) {
-            //     pcpKeepingCountTrack = 1
-            //     // pcpFieldsCount[i].value = pointer.y + " : " + pointer.x
-            //     pcpFieldsCount[0].value = pcpPointerY + " : " + pcpPointerX
-            //   } else {
-            //     pcpFieldsCount[i].value = pcpPointerY + " : " + pcpPointerX
-            //   }
-            // }
-            console.log(o)
-            pcpFieldsCount[pcpKeepingCountTrack].value = o.selected[0].left + " : " + o.selected[0].top + " : " + o.selected[0].height + " : " + o.selected[0].width
-            pcpKeepingCountTrack++
-          })
-        }
-        Rectangle.prototype.onMouseUp = function (o) {
-          var inst = this;
-          inst.disable();
-        };
+      //   Rectangle.prototype.bindEvents = function () {
+      //     var inst = this;
+      //     inst.canvas.on('mouse:down', function (o) {
+      //       inst.onMouseDown(o);
+      //     });
+      //     inst.canvas.on('mouse:move', function (o) {
+      //       inst.onMouseMove(o);
+      //     });
+      //     inst.canvas.on('mouse:up', function (o) {
+      //       inst.onMouseUp(o);
+      //     });
+      //     inst.canvas.on('object:moving', function (o) {
+      //       inst.disable();
+      //     })
+      //     inst.canvas.on('selection:created', function (o) {
+      //       // for (let i = 0; i <= pcpFieldsCount.length; i++) {
+      //       //   if (pcpKeepingCountTrack == 0) {
+      //       //     pcpKeepingCountTrack = 1
+      //       //     // pcpFieldsCount[i].value = pointer.y + " : " + pointer.x
+      //       //     pcpFieldsCount[0].value = pcpPointerY + " : " + pcpPointerX
+      //       //   } else {
+      //       //     pcpFieldsCount[i].value = pcpPointerY + " : " + pcpPointerX
+      //       //   }
+      //       // }
+      //       console.log(o)
+      //       pcpFieldsCount[pcpKeepingCountTrack].value = o.selected[0].left + " : " + o.selected[0].top + " : " + o.selected[0].height + " : " + o.selected[0].width
+      //       pcpKeepingCountTrack++
+      //     })
+      //   }
+      //   Rectangle.prototype.onMouseUp = function (o) {
+      //     var inst = this;
+      //     inst.disable();
+      //   };
 
-        Rectangle.prototype.onMouseMove = function (o) {
-          var inst = this;
-
-
-          if (!inst.isEnable()) { return; }
-          console.log("mouse move rectange");
-          var pointer = inst.canvas.getPointer(o.e);
-          var activeObj = inst.canvas.getActiveObject();
-
-          activeObj.stroke = 'red',
-            activeObj.strokeWidth = 1;
-          activeObj.fill = 'transparent';
-
-          if (origX > pointer.x) {
-            activeObj.set({ left: Math.abs(pointer.x) });
-          }
-          if (origY > pointer.y) {
-            activeObj.set({ top: Math.abs(pointer.y) });
-          }
-
-          activeObj.set({ width: Math.abs(origX - pointer.x) });
-          activeObj.set({ height: Math.abs(origY - pointer.y) });
-          activeObj.setCoords();
+      //   Rectangle.prototype.onMouseMove = function (o) {
+      //     var inst = this;
 
 
-          pcpPointerY = pointer.y
-          pcpPointerX = pointer.x
+      //     if (!inst.isEnable()) { return; }
+      //     console.log("mouse move rectange");
+      //     var pointer = inst.canvas.getPointer(o.e);
+      //     var activeObj = inst.canvas.getActiveObject();
+
+      //     activeObj.stroke = 'red',
+      //       activeObj.strokeWidth = 1;
+      //     activeObj.fill = 'transparent';
+
+      //     if (origX > pointer.x) {
+      //       activeObj.set({ left: Math.abs(pointer.x) });
+      //     }
+      //     if (origY > pointer.y) {
+      //       activeObj.set({ top: Math.abs(pointer.y) });
+      //     }
+
+      //     activeObj.set({ width: Math.abs(origX - pointer.x) });
+      //     activeObj.set({ height: Math.abs(origY - pointer.y) });
+      //     activeObj.setCoords();
 
 
+      //     pcpPointerY = pointer.y
+      //     pcpPointerX = pointer.x
 
 
 
-          inst.canvas.renderAll();
-
-        };
-
-        Rectangle.prototype.onMouseDown = function (o) {
-          var inst = this;
-          inst.enable();
-
-          var pointer = inst.canvas.getPointer(o.e);
-          origX = pointer.x;
-          origY = pointer.y;
-
-          var rect = new fabric.Rect({
-            left: origX,
-            top: origY,
-            originX: 'left',
-            originY: 'top',
-            width: pointer.x - origX,
-            height: pointer.y - origY,
-            angle: 0,
-            transparentCorners: false,
-            hasBorders: false,
-            hasControls: false
-          });
-
-          inst.canvas.add(rect).setActiveObject(rect);
-        };
-
-        Rectangle.prototype.isEnable = function () {
-          return this.isDrawing;
-        }
-
-        Rectangle.prototype.enable = function () {
-          this.isDrawing = true;
-        }
-
-        Rectangle.prototype.disable = function () {
-          this.isDrawing = false;
-        }
-
-        return Rectangle;
-      }());
 
 
+      //     inst.canvas.renderAll();
 
-      var canvas = new fabric.Canvas('canvas');
-      var arrow = new Rectangle(canvas);
+      //   };
+
+      //   Rectangle.prototype.onMouseDown = function (o) {
+      //     var inst = this;
+      //     inst.enable();
+
+      //     var pointer = inst.canvas.getPointer(o.e);
+      //     origX = pointer.x;
+      //     origY = pointer.y;
+
+      //     var rect = new fabric.Rect({
+      //       left: origX,
+      //       top: origY,
+      //       originX: 'left',
+      //       originY: 'top',
+      //       width: pointer.x - origX,
+      //       height: pointer.y - origY,
+      //       angle: 0,
+      //       transparentCorners: false,
+      //       hasBorders: false,
+      //       hasControls: false
+      //     });
+
+      //     inst.canvas.add(rect).setActiveObject(rect);
+      //   };
+
+      //   Rectangle.prototype.isEnable = function () {
+      //     return this.isDrawing;
+      //   }
+
+      //   Rectangle.prototype.enable = function () {
+      //     this.isDrawing = true;
+      //   }
+
+      //   Rectangle.prototype.disable = function () {
+      //     this.isDrawing = false;
+      //   }
+
+      //   return Rectangle;
+      // }());
+
+      // var canvas = new fabric.Canvas('canvas');
+      // var arrow = new Rectangle(canvas);
       //ext - code
+
+
+      var canvas1 = new fabric.Canvas('canvas');
+
+      canvas1.setHeight(500);
+      canvas1.setWidth(500);
+      let rect = new fabric.Rect({
+        left: 20,
+        top: 30,
+        width: 90,
+        height: 70,
+        fill: "blue",
+      })
+
+      canvas1.add(rect);
+      canvas1.renderAll()
+
+      document.querySelector('#pcp-getFields').addEventListener('click', function () {
+        let val = document.querySelector('#text-input').value
+        console.log(val)
+        let elem;
+        let label;
+        for (let i = 1; i <= val; i++) {
+
+          elem = document.createElement('input')
+          elemBtn = document.createElement('button')
+          elemBtn.addEventListener('click', (e) => pcpGetCoordinates(e, canvas1))
+          elemBreak = document.createElement('br')
+          elemBtn.innerHTML = "Get Coords"
+
+          elem.setAttribute('class', 'pcp-input-field')
+          elem.setAttribute('id', 'btn-pcp-input' + i)
+          elemBtn.setAttribute('class', 'pcp-getCoords')
+          elemBtn.setAttribute('id', 'pcp-input' + i)
+
+          if (i == 1) {
+            elem.setAttribute('data-pcp-id', 'pcp-input-field-text')
+            elem.setAttribute('placeholder', 'text #' + i)
+          } else {
+            elem.setAttribute('placeholder', 'Image #' + i)
+          }
+
+          document.querySelector('#pcp-wrapper').append(elem)
+          document.querySelector('#pcp-wrapper').append(elemBtn)
+          document.querySelector('#pcp-wrapper').append(elemBreak)
+
+
+
+        }
+      })
+
 
     };
 
@@ -258,6 +323,9 @@ fileInput.addEventListener('change', function () {
     var pcpKeepingCountTrack = 0
     var pcpPointerY;
     var pcpPointerX;
+
+
+
 
 
 
